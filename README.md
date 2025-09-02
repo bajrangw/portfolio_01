@@ -44,7 +44,7 @@ This project serves as my digital portfolio, allowing users to generate AI-power
 
 ##  Tech Stack
 
-- **Frontend**: React, Tailwind CSS (adjust if applicable), React Hooks, Form handling  
+- **Frontend**: React, Tailwind CSS, React Hooks, Form handling  
 - **Backend**: Node.js / Express or our chosen stack  
 - **Auth**: Clerk (for authentication, user metadata, and plans)  
 - **Database**: SQL (PostgreSQL or SQLite via `sql` tagged queries)  
