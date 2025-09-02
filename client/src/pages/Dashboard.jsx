@@ -62,7 +62,6 @@ const Dashboard = () => {
           <div className="text-slate-600">
             <p className="text-sm">Active Plan</p>
             <h2 className="text-xl font-semibold">
-              {/* Replace Protect with custom logic if needed */}
               <Protect role="org:admin" fallback="Free">
                 Premium
               </Protect>

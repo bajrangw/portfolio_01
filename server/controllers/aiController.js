@@ -16,7 +16,7 @@ const AI = new OpenAI({
 // generateArticle api
 export const generateArticle = async (req, res) => {
     try {
-        const { userID } = req.auth();
+        const { userId } = req.auth();
         const { prompt, length } = req.body;
         const plan = req.plan;
         const free_usage = req.free_usage;
@@ -35,10 +35,10 @@ export const generateArticle = async (req, res) => {
     const content = response.choices[0].message.content
 
     await sql` INSERT INTO creations (user_id, prompt, content, type) 
-    VALUES (${userID}, ${prompt}, ${content}, 'artical')`;
+    VALUES (${userId}, ${prompt}, ${content}, 'article')`;
 
     if (plan !== 'premium'){
-        await clerkClient.users.updateUserMetadata(userID, {
+        await clerkClient.users.updateUserMetadata(userId, {
             privateMetadata:{
                 free_usage: free_usage + 1
             }
@@ -50,7 +50,7 @@ export const generateArticle = async (req, res) => {
 
     } catch (error) {
         console.log(error.message)
-        req.json({success: false, message: error.message})
+        res.json({success: false, message: error.message})
     }
 }
 
@@ -58,7 +58,7 @@ export const generateArticle = async (req, res) => {
 
 export const generateBlogTitle = async (req, res)=>{
     try {
-        const { userID } = req.auth();
+        const { userId } = req.auth();
         const { prompt } = req.body;
         const plan = req.plan;
         const free_usage = req.free_usage;
@@ -77,10 +77,10 @@ export const generateBlogTitle = async (req, res)=>{
     const content = response.choices[0].message.content
 
     await sql` INSERT INTO creations (user_id, prompt, content, type) 
-    VALUES (${userID}, ${prompt}, ${content}, 'blog-title')`;
+    VALUES (${userId}, ${prompt}, ${content}, 'blog-title')`;
 
     if (plan !== 'premium'){
-        await clerkClient.users.updateUserMetadata(userID, {
+        await clerkClient.users.updateUserMetadata(userId, {
             privateMetadata:{
                 free_usage: free_usage + 1
             }
@@ -92,7 +92,7 @@ export const generateBlogTitle = async (req, res)=>{
 
     } catch (error) {
         console.log(error.message)
-        req.json({success: false, message: error.message})
+        res.json({success: false, message: error.message})
     }
 }
 
@@ -100,7 +100,7 @@ export const generateBlogTitle = async (req, res)=>{
 
 export const generateImage = async (req, res)=>{
     try {
-        const { userID } = req.auth();
+        const { userId } = req.auth();
         const { prompt, publish } = req.body;
         const plan = req.plan;
 
@@ -123,7 +123,7 @@ export const generateImage = async (req, res)=>{
 
 
     await sql` INSERT INTO creations (user_id, prompt, content, type, publish) 
-    VALUES (${userID}, ${prompt}, ${secure_url}, 'image', ${publish ?? false })`;
+    VALUES (${userId}, ${prompt}, ${secure_url}, 'image', ${publish ?? false })`;
 
   
 
@@ -132,7 +132,7 @@ export const generateImage = async (req, res)=>{
 
     } catch (error) {
         console.log(error.message)
-        req.json({success: false, message: error.message})
+        res.json({success: false, message: error.message})
     }
 }
 
@@ -140,7 +140,7 @@ export const generateImage = async (req, res)=>{
 
 export const removeImageBackground = async (req, res)=>{
     try {
-        const { userID } = req.auth();
+        const { userId } = req.auth();
         const image = req.file;
         const plan = req.plan;
 
@@ -159,14 +159,14 @@ export const removeImageBackground = async (req, res)=>{
 
 
     await sql` INSERT INTO creations (user_id, prompt, content, type) 
-    VALUES (${userID}, 'Remove background form image', ${secure_url}, 'image')`;
+    VALUES (${userId}, 'Remove background form image', ${secure_url}, 'image')`;
 
     res.json({ success: true, content: secure_url})
 
 
     } catch (error) {
         console.log(error.message)
-        req.json({success: false, message: error.message})
+        res.json({success: false, message: error.message})
     }
 }
 
@@ -174,7 +174,7 @@ export const removeImageBackground = async (req, res)=>{
 
 export const removeImageObject = async (req, res)=>{
     try {
-        const { userID } = req.auth();
+        const { userId } = req.auth();
         const { object } = req.body();
         const image = req.file;
         const plan = req.plan;
@@ -192,14 +192,14 @@ export const removeImageObject = async (req, res)=>{
 
 
     await sql` INSERT INTO creations (user_id, prompt, content, type) 
-    VALUES (${userID}, ${`Removed ${object} from image`}, ${imageUrl}, 'image')`;
+    VALUES (${userId}, ${`Removed ${object} from image`}, ${imageUrl}, 'image')`;
 
     res.json({ success: true, content: imageUrl})
 
 
     } catch (error) {
         console.log(error.message)
-        req.json({success: false, message: error.message})
+        res.json({success: false, message: error.message})
     }
 }
 
@@ -208,41 +208,39 @@ export const removeImageObject = async (req, res)=>{
 
 export const resumeReview = async (req, res)=>{
     try {
-        const { userID } = req.auth();
-        const resume = req.file;
-        const plan = req.plan;
+    const { userId } = req.auth();
+    const resume = req.file;
+    const plan = req.plan;
 
-        if(plan !== 'premium'){
-            return res.json({ success: false, message: "This feature is only available for premium subscriptions"})
-        }
-
-        if(resume.size > 5 * 1024 * 1024){
-            return res.json({success: false, message: "Resume file size exceeds allowed size (5MB)."})
-        }
-
-        const dataBuffer = fs.readFileSync(resume.path)
-        const pdfData = await pdf(dataBuffer)
-
-        const prompt = `Review the following resume and provide constructive feedback. Highlight its strengths, weaknesses, and specific areas for improvement. Offer clear and actionable suggestions that could help make the resume more effective. Resume Content:\n\n${pdfData.text}`
-
-        const response = await AI.chat.completions.create({
-    model: "gemini-2.0-flash",
-    messages: [{role: "user", content: prompt, } ],
-    temperature: 0.7,
-    max_tokens: 1000,
-});
-
-    const content = response.choices[0].message.content
-
-
-    await sql` INSERT INTO creations (user_id, prompt, content, type) 
-    VALUES (${userID}, 'Review the uploaded resume', ${content}, 'resume-review')`;
-
-    res.json({ success: true, content})
-
-
-    } catch (error) {
-        console.log(error.message)
-        req.json({success: false, message: error.message})
+    if(plan !== 'premium'){
+      return res.json({ success: false, message: "This feature is only available for premium subscriptions"});
     }
-}
+
+    if(!resume) return res.json({ success: false, message: "Resume file is required" });
+    if(resume.size > 5 * 1024 * 1024){
+      return res.json({ success: false, message: "Resume file size exceeds allowed size (5MB)." });
+    }
+
+    const dataBuffer = fs.readFileSync(resume.path);
+    const pdfData = await pdf(dataBuffer);
+
+    const prompt = `Review the following resume and provide constructive feedback. Highlight its strengths, weaknesses, and specific areas for improvement. Offer clear and actionable suggestions that could help make the resume more effective. Resume Content:\n\n${pdfData.text}`;
+
+    const response = await AI.chat.completions.create({
+      model: "gemini-2.0-flash",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+
+    const content = response.choices[0].message.content;
+
+    await sql`INSERT INTO creations (user_id, prompt, content, type) 
+               VALUES (${userId}, 'Review the uploaded resume', ${content}, 'resume-review')`;
+
+    res.json({ success: true, content });
+  } catch (error) {
+    console.log(error.message);
+    res.json({ success: false, message: error.message });
+  }
+};
