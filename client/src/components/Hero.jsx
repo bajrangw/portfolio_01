@@ -14,7 +14,7 @@ const Hero = () => {
       {/* Content goes here */}
       <div className="text-center mb-6">
          <h1 className="text-3xl sm:text-5xl md:text-6xl 2xl:text-7xl font-semibold mx-auto leading-[1.2]">
-          Welcome to <span className='text-primary'>Act.ai</span>
+          Welcome to <span className='text-primary'>Quick.ai</span>
          </h1>
           <p className='mt-4 max-w-xs sm:max-w-lg 2xl:max-w-xl m-auto max-sm:text-xs text-gray-600'> 
            Transform your content creation with our suite of premium AI tools — write articles, generate images, and enhance your workflow.</p>

@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="md:max-w-96">
             <img className="h-9" src={assets.logo} alt="Logo"/>
             <p className="mt-6 text-sm">
-                Experience the power of AI with ActAi. <br/> Transform your content creation with our suite of intelligent AI tools. Write articles, generate images, remove backgrounds, and more — all in one place.
+                Experience the power of AI with Quick Ai. <br/> Transform your content creation with our suite of intelligent AI tools. Write articles, generate images, remove backgrounds, and more — all in one place.
             </p>
         </div>
         <div className="flex-1 flex items-start md:justify-end gap-20">
@@ -34,7 +34,7 @@ const Footer = () => {
         </div>
     </div>
     <p className="pt-4 text-center text-xs md:text-sm pb-5">
-        © {new Date().getFullYear()} ActAi. All rights reserved.
+        © {new Date().getFullYear()} Quick Ai. All rights reserved.
     </p>
 </footer>
   )
