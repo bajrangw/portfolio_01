@@ -98,54 +98,42 @@ export const generateBlogTitle = async (req, res)=>{
 
 // generateImage api
 
-export const generateImage = async (req, res) => {
-  try {
-    const { userId } = req.auth();
-    const { prompt, publish } = req.body;
-    const plan = req.plan;
+export const generateImage = async (req, res)=>{
+    try {
+        const { userId } = req.auth();
+        const { prompt, publish } = req.body;
+        const plan = req.plan;
 
-    if (plan !== "premium") {
-      return res.json({
-        success: false,
-        message: "This feature is only available for premium subscriptions",
-      });
+        if(plan !== 'premium'){
+            return res.json({ success: false, message: "This feature is only available for premium subscriptions"})
+        }
+
+        const formData = new FormData()
+        formData.append('prompt', prompt)
+
+        const {data} = await axios.post("https://clipdrop-api.co/text-to-image/v1", formData, {
+            headers: {'x-api-key': process.env.CLIPDROP_API_KEY,},
+            responseType: "arraybuffer",
+        })
+
+        const base64Image = `data:image/png;base64,${Buffer.from(data, 'binary').
+            toString('base64')}`;
+
+            const {secure_url} = await cloudinary.uploader.upload(base64Image)
+
+
+    await sql` INSERT INTO creations (user_id, prompt, content, type, publish) 
+    VALUES (${userId}, ${prompt}, ${secure_url}, 'image', ${publish ?? false })`;
+  
+
+    res.json({ success: true, content: secure_url})
+
+
+    } catch (error) {
+        console.log(error.message)
+        res.json({success: false, message: error.message})
     }
-
-    // Generate image via Gemini AI (or other free API you have)
-    const response = await AI.images.generate({
-      model: "gemini-image-1.0",
-      prompt,
-      size: "1024x1024",
-    });
-
-    // The API should return a base64 image or URL
-    const base64Image = response.data[0].b64_json;
-
-    if (!base64Image) {
-      return res.json({ success: false, message: "Image generation failed" });
-    }
-
-    // Upload to Cloudinary
-    const { secure_url } = await cloudinary.uploader.upload(
-      `data:image/png;base64,${base64Image}`
-    );
-
-    // Save to database
-    await sql`
-      INSERT INTO creations (user_id, prompt, content, type, publish)
-      VALUES (${userId}, ${prompt}, ${secure_url}, 'image', ${publish ?? false})
-    `;
-
-    res.json({ success: true, content: secure_url });
-  } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.json({
-      success: false,
-      message:
-        error.response?.data?.error?.message || error.message || "Something went wrong",
-    });
-  }
-};
+}
 
 // removeImageBackground api
 
