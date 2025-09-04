@@ -1,4 +1,6 @@
 # Portfolio_01
+![Uploading PROJECT_IMG_2.png…]()
+
 
 Welcome to my developer **Portfolio Quick.ai Project**! This repository showcases my web development skills using React, Node.js (or Express), and integrations like Clerk authentication and SQL database operations.
 
