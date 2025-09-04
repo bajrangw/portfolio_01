@@ -1,5 +1,5 @@
 # Portfolio_01
-![Uploading PROJECT_IMG_2.png…]()
+<img width="1918" height="907" alt="PROJECT_IMG_2" src="https://github.com/user-attachments/assets/6bc4f8f9-7070-4729-99c0-7a768602f6e3" />
 
 
 Welcome to my developer **Portfolio Quick.ai Project**! This repository showcases my web development skills using React, Node.js (or Express), and integrations like Clerk authentication and SQL database operations.
